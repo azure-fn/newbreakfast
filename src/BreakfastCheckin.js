@@ -12,7 +12,13 @@ const BreakfastCheckin = () => {
 
   useEffect(() => {
     const loadExcelData = async () => {
-       const response = await fetch('https://raw.githubusercontent.com/azure-fn/newbreakfast/master/public/guests.xlsx');// Đảm bảo file guests.xlsx nằm trong thư mục public
+      const response = await fetch('https://raw.githubusercontent.com/azure-fn/newbreakfast/master/public/guests.xlsx', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/octet-stream',
+  },
+  mode: 'cors', // hoặc 'no-cors'
+});
       const data = await response.arrayBuffer();
       const workbook = XLSX.read(data, { type: 'array' });
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
