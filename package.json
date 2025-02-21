@@ -15,7 +15,8 @@
     "web-vitals": "^2.1.4",
     "xlsx": "^0.18.5"
   },
-  
+  "proxy": "https://raw.githubusercontent.com",
+  "homepage": "https://azure-fn.github.io/newbreakfast/",
   "scripts": {
       "predeploy": "npm run build",
   "deploy": "gh-pages -d build",
