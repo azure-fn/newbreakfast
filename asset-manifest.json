@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/newbreakfast/static/css/main.eee675ac.css",
+    "main.js": "/newbreakfast/static/js/main.f0f8f32a.js",
+    "static/js/453.f0e33eac.chunk.js": "/newbreakfast/static/js/453.f0e33eac.chunk.js",
+    "index.html": "/newbreakfast/index.html",
+    "main.eee675ac.css.map": "/newbreakfast/static/css/main.eee675ac.css.map",
+    "main.f0f8f32a.js.map": "/newbreakfast/static/js/main.f0f8f32a.js.map",
+    "453.f0e33eac.chunk.js.map": "/newbreakfast/static/js/453.f0e33eac.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.eee675ac.css",
+    "static/js/main.f0f8f32a.js"
+  ]
+}
