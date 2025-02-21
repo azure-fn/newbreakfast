@@ -12,7 +12,7 @@ const BreakfastCheckin = () => {
 
   useEffect(() => {
     const loadExcelData = async () => {
-      const response = await fetch('https://raw.githubusercontent.com/azure-fn/newbreakfast/master/public/guests.xlsx', {
+      const response = await fetch('https://azure-fn.github.io/newbreakfast/guests.xlsx', {
   method: 'GET',
   headers: {
     'Content-Type': 'application/octet-stream',
