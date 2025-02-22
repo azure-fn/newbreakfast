@@ -39,7 +39,7 @@ const BreakfastCheckin = () => {
     if (guest) {
       setNumPeople(guest.NumberOfPeople);
     } else {
-      alert('Room not found.');
+      alert('朝食未購入');
     }
   };
 
