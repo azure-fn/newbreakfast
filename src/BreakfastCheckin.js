@@ -10,8 +10,9 @@ const BreakfastCheckin = () => {
   const [checkedInGuests, setCheckedInGuests] = useState(0); // Số khách đã check-in
   const [notArrivedGuests, setNotArrivedGuests] = useState([]); // Danh sách khách chưa đến
 
-  const response = await fetch(window.location.origin + "/guests.xlsx");
-  
+  useEffect(() => {
+    const loadExcelData = async () => {
+      const response = await fetch('/guests.xlsx'); // Đảm bảo file guests.xlsx nằm trong thư mục public
       const data = await response.arrayBuffer();
       const workbook = XLSX.read(data, { type: 'array' });
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
