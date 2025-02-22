@@ -10,15 +10,8 @@ const BreakfastCheckin = () => {
   const [checkedInGuests, setCheckedInGuests] = useState(0); // Số khách đã check-in
   const [notArrivedGuests, setNotArrivedGuests] = useState([]); // Danh sách khách chưa đến
 
-  useEffect(() => {
-    const loadExcelData = async () => {
-      const response = await fetch('https://azure-fn.github.io/newbreakfast/guests.xlsx', {
-  method: 'GET',
-  headers: {
-    'Content-Type': 'application/octet-stream',
-  },
-  mode: 'cors', // hoặc 'no-cors'
-});
+  const response = await fetch(window.location.origin + "/guests.xlsx");
+  
       const data = await response.arrayBuffer();
       const workbook = XLSX.read(data, { type: 'array' });
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
