@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
-import { db, collection, getDocs, setDoc, doc, deleteDoc } from './firebaseConfig';
+import { db, collection, setDoc, doc, deleteDoc, onSnapshot } from './firebaseConfig';
 
 const BreakfastCheckin = () => {
   const [roomNumber, setRoomNumber] = useState('');
@@ -10,35 +10,46 @@ const BreakfastCheckin = () => {
   const [checkedInGuests, setCheckedInGuests] = useState(0);
   const [notArrivedGuests, setNotArrivedGuests] = useState([]);
   const [arrivedGuests, setArrivedGuests] = useState([]);
-  
-  // Đọc dữ liệu từ Firestore
-  const fetchGuestsFromFirestore = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(db, "breakfastGuests"));
+
+  // Đọc dữ liệu từ Firestore với onSnapshot để theo dõi thay đổi thời gian thực
+  const fetchGuestsFromFirestore = () => {
+    const collectionRef = collection(db, "breakfastGuests");
+
+    // Lắng nghe dữ liệu từ Firestore
+    const unsubscribe = onSnapshot(collectionRef, (querySnapshot) => {
       const loadedData = querySnapshot.docs.map(doc => doc.data());
-      
+
       console.log('Dữ liệu từ Firestore:', loadedData); // Kiểm tra dữ liệu có tải về không
-  
+
       setGuestsData(loadedData);
-  
+
       const total = loadedData.reduce((acc, guest) => acc + (parseInt(guest.NumberOfPeople) || 0), 0);
       setTotalGuestsOfTheDay(total);
-  
+
       const notArrived = loadedData.filter(guest => guest.status !== 'arrived');
       setNotArrivedGuests(notArrived);
       console.log('Danh sách chưa đến:', notArrived);
-  
+
       const arrived = loadedData.filter(guest => guest.status === 'arrived');
       setArrivedGuests(arrived);
-    } catch (error) {
+    }, (error) => {
       console.error('Lỗi khi lấy dữ liệu từ Firestore:', error);
-    }
+    });
+
+    // Trả về hàm unsubscribe để ngừng lắng nghe khi component unmount
+    return unsubscribe;
   };
-  
+
   useEffect(() => {
-    fetchGuestsFromFirestore();
+    // Khởi động việc lắng nghe dữ liệu khi component được render
+    const unsubscribe = fetchGuestsFromFirestore();
+
+    // Clean up listener khi component unmount
+    return () => {
+      unsubscribe();
+    };
   }, []);
-  
+
   // Hàm đọc dữ liệu từ Excel
   const readExcelFile = async (file) => {
     try {
@@ -46,27 +57,27 @@ const BreakfastCheckin = () => {
       const workbook = XLSX.read(fileData, { type: 'array' });
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
-  
+
       console.log('Excel file data:', jsonData);
-  
+
       const formattedData = transformExcelData(jsonData);
       console.log("Dữ liệu đã xử lý:", formattedData);
-  
+
       // Cập nhật state để hiển thị ngay trên UI
       setGuestsData(formattedData);
       setTotalGuestsOfTheDay(formattedData.reduce((acc, guest) => acc + (parseInt(guest.NumberOfPeople) || 0), 0));
-  
+
       // Sau khi set state, tiến hành lưu vào Firestore
       await uploadDataToFirestore(formattedData);
-  
+
       // Sau khi upload, load lại dữ liệu từ Firestore
       await fetchGuestsFromFirestore();
-  
+
     } catch (error) {
       console.error('Error reading Excel file:', error);
     }
   };
-  
+
   // Chuyển đổi dữ liệu Excel
   const transformExcelData = (rawData) => {
     return rawData.map(row => ({
@@ -77,22 +88,21 @@ const BreakfastCheckin = () => {
       Date: row["__EMPTY_4"] || "",  // Thêm cột Date
     })).filter(guest => guest.Room && guest.NumberOfPeople > 0); // Lọc bỏ dòng trống
   };
-  
-  
+
   // Lưu dữ liệu vào Firestore
   const uploadDataToFirestore = async (data) => {
     try {
       console.log("Dữ liệu chuẩn bị upload:", data);
-  
+
       const collectionRef = collection(db, "breakfastGuests");
-  
+
       // Xóa dữ liệu cũ trong collection (nếu cần)
       await deleteCollectionData(collectionRef);
-  
+
       // Duyệt qua từng guest và thêm thông tin vào Firestore
       for (const guest of data) {
         console.log("Đang xử lý:", guest);
-  
+
         // Kiểm tra thông tin có hợp lệ không
         if (guest.Room && guest.NumberOfPeople) {
           await setDoc(doc(collectionRef, guest.Room.toString()), {
@@ -106,19 +116,17 @@ const BreakfastCheckin = () => {
           console.warn("Bỏ qua guest không hợp lệ:", guest);
         }
       }
-  
+
       console.log("Dữ liệu đã được tải lên Firestore!");
-  
+
       // Gọi lại fetchGuestsFromFirestore để cập nhật giao diện
       await fetchGuestsFromFirestore();
-  
+
     } catch (error) {
       console.error("Lỗi khi tải dữ liệu lên Firestore:", error);
     }
   };
-  
-  
-  
+
   // Xóa dữ liệu trong Firestore trước khi tải mới
   const deleteCollectionData = async (collectionRef) => {
     try {
@@ -253,8 +261,8 @@ const BreakfastCheckin = () => {
         <ul>
           {arrivedGuests.map((guest, index) => (
             <li key={index}>
-            Room {guest.Room}: {guest.Name} 様 - {guest.NumberOfPeople} 名 - {guest.Date} {/* Thêm cột Date */}
-          </li>
+              Room {guest.Room}: {guest.Name} 様 - {guest.NumberOfPeople} 名 - {guest.Date} {/* Thêm cột Date */}
+            </li>
           ))}
         </ul>
       </div>
@@ -265,7 +273,7 @@ const BreakfastCheckin = () => {
           {notArrivedGuests.map((guest, index) => (
             <li key={index}>
               Room {guest.Room}: {guest.Name} 様 - {guest.NumberOfPeople} 名 - {guest.Date} {/* Thêm cột Date */}
-          </li>
+            </li>
           ))}
         </ul>
       </div>

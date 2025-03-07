@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc } from "firebase/firestore";
+import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc, onSnapshot } from "firebase/firestore";  // Sửa tại đây
 
 const firebaseConfig = {
     apiKey: "AIzaSyCR4wnaIxuMagXkiqhqKJsVFR5zxIq_ESI",
@@ -12,6 +12,6 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = getFirestore(app);  // Không cần khai báo lại db ở đây
 
-export { db, collection, getDocs, setDoc, doc, deleteDoc };
+export { db, collection, getDocs, setDoc, doc, deleteDoc, onSnapshot };
